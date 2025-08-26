@@ -3,17 +3,14 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { connectToDatabase } from "./db";
 import User from "../models/User";
 import bcrypt from "bcryptjs";
+import GoogleProvider from "next-auth/providers/google";
 
 export const authOptions: NextAuthOptions = {
   providers: [
-    //   GithubProvider({
-    //     clientId: process.env.GITHUB_ID!,
-    //     clientSecret: process.env.GITHUB_SECRET!,
-    //   }),
-    //   GoogleProvider({
-    //   clientId: process.env.GOOGLE_CLIENT_ID!,
-    //   clientSecret: process.env.GOOGLE_CLIENT_SECRET!
-    // })
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID ?? (() => { throw new Error("GOOGLE_CLIENT_ID is not set"); })(),
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? (() => { throw new Error("GOOGLE_CLIENT_SECRET is not set"); })(),
+    }),
 
     CredentialsProvider({
       name: "Credentials",

@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     }
 
     await User.create({
-      email, password
+     name, email, password
     })
 
     return NextResponse.json(
