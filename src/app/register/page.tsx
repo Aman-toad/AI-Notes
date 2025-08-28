@@ -1,4 +1,5 @@
 "use client";
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 
@@ -11,6 +12,7 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     if (password !== confirmPassword) {
       alert("password do not match");
       return
@@ -107,6 +109,21 @@ export default function RegisterPage() {
             Login here
           </a>
         </p>
+      </div>
+      <div className="mt-6">
+        <button
+          type="button"
+          onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+          className="w-full py-2 px-4 bg-red-600 text-white font-semibold rounded hover:bg-red-700 transition flex items-center justify-center gap-2"
+        >
+          <svg className="w-5 h-5" viewBox="0 0 24 24">
+            <path
+              fill="currentColor"
+              d="M21.35 11.1h-9.18v2.98h5.26c-.23 1.24-1.39 3.65-5.26 3.65-3.16 0-5.74-2.62-5.74-5.85s2.58-5.85 5.74-5.85c1.8 0 3.01.77 3.7 1.43l2.53-2.46C16.13 3.98 14.29 3 12.17 3 6.76 3 2.5 7.25 2.5 12.01s4.26 9.01 9.67 9.01c5.59 0 9.28-3.92 9.28-9.46 0-.64-.07-1.13-.16-1.56z"
+            />
+          </svg>
+          Sign in with Google
+        </button>
       </div>
     </div>
   )

@@ -39,7 +39,8 @@ export const authOptions: NextAuthOptions = {
 
           return {
             id: user._id.toString(),
-            email: user.email
+            email: user.email,
+            name: user.name
           }
         } catch (error) {
           console.error("Auth Error", error);
@@ -50,18 +51,42 @@ export const authOptions: NextAuthOptions = {
   ],
 
   callbacks: {
+
+    async signIn({user,account, profile, email}){
+      await connectToDatabase();
+      const existingUser = await User.findOne({email: user.email});
+      if(!existingUser){
+        await User.create({
+          name: user.name,
+          email: user.email,
+          image: user.image
+        });
+      }
+      return true
+    },
+
     async jwt({token, user}){
       if(user){
-        token.id = user.id
+        token.id = user.id;
+        token.name = user.name;
+        token.email = user.email
       }
       return token
     },
     async session({session,token }){
       if(session.user){
-        session.user.id = token.id as string
+        session.user.id = token.id as string;
+        session.user.name = token.name;
+        session.user.email = token.email;
       }
       return session
-    }
+    },
+
+    async redirect({url, baseUrl}){
+      return `${baseUrl}/dashboard`;
+    },
+
+    
   }, 
 
   pages: {

@@ -11,7 +11,7 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
+    
     const result = await signIn("credentials", {
       email, password, redirect: false
     })
