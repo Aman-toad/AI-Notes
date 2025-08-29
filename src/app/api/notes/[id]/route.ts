@@ -5,7 +5,8 @@ import { connectToDatabase } from "../../../../../lib/db";
 import Note from "../../../../../models/Note";
 import User from "../../../../../models/User";
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, context: { params: Promise<{ id: string }> }) {
+
   await connectToDatabase();
   const session = await getServerSession(authOptions);
 
@@ -18,10 +19,10 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     return NextResponse.json({ error: 'User not found' }, { status: 404 });
   }
 
-
+  const { id } = await context.params;
   const { title, content } = await req.json();
   const updatedNote = await Note.findOneAndUpdate(
-    { _id: params.id, userId: user._id },
+    { _id: id, user: user._id },
     { title, content },
     { new: true }
   );
@@ -36,7 +37,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   return NextResponse.json(updatedNote);
 }
 
-export async function DELETE(_: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
   await connectToDatabase();
   const session = await getServerSession(authOptions);
 
@@ -47,12 +48,14 @@ export async function DELETE(_: Request, { params }: { params: { id: string } })
     );
   }
 
+
   const user = await User.findOne({ email: session.user.email });
   if (!user) {
     return NextResponse.json({ error: 'User not found' }, { status: 404 });
   }
 
-  const deletedNote = await Note.findOneAndDelete({ _id: params.id, userId: user._id })
+  const { id } = await context.params;
+  const deletedNote = await Note.findOneAndDelete({ _id: id, user: user._id });
   if (!deletedNote) {
     return NextResponse.json({ error: 'Note not found' }, { status: 404 });
   }

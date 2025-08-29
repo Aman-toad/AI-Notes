@@ -24,7 +24,7 @@ export async function GET() {
     )
   }
 
-  const notes = await Note.find({ userId: user._id }).sort({ createdAt: -1 });
+  const notes = await Note.find({ user: user._id }).sort({ createdAt: -1 });
   return NextResponse.json(notes);
 }
 
@@ -43,7 +43,7 @@ export async function POST(req: Request) {
 
   const { title, content } = await req.json();
   const newNote = await Note.create({
-    userId: user._id,
+    user: user._id,
     title,
     content
   });
