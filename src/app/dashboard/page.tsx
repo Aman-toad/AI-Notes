@@ -26,6 +26,12 @@ export default function DashboardPage() {
         >
           Grammar
         </button>
+        <button 
+          onClick={() => router.push("/dashboard/textEnhancer")}
+          className="px-4 py-2 bg-yellow-500 text-white rounded"
+        >
+          Text Enhancer
+        </button>
       </div>
     </div>
   );

@@ -1,25 +1,25 @@
 "use client";
 import { useState } from "react";
 
-export default function GrammarPage() {
+export default function TextEnhancerPage() {
   const [text, setText] = useState("");
-  const [correct, setCorrected] = useState("");
+  const [enhance, setEnhance] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleFixGrammar = async () => {
+  const handleTextEnhance = async () => {
     setLoading(true);
-    setCorrected("");
+    setEnhance("");
     try {
-      const res = await fetch("/api/ai/grammar", {
+      const res = await fetch("/api/ai/textEnhancer", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text }),
       });
       const data = await res.json();
       
-      setCorrected(data.grammarizedText);
+      setEnhance(data.EnhancedText);
     } catch (err) {
-      setCorrected("Error while fixing grammar.");
+      setEnhance("Error while enhancing the text.");
     } finally {
       setLoading(false);
     }
@@ -27,7 +27,7 @@ export default function GrammarPage() {
 
   return (
     <div className="p-6 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Grammar Checker</h1>
+      <h1 className="text-2xl font-bold mb-4">Text Enhancer</h1>
       <textarea
         className="w-full border rounded p-3 mb-4"
         rows={6}
@@ -36,17 +36,17 @@ export default function GrammarPage() {
         onChange={(e) => setText(e.target.value)}
       />
       <button
-        onClick={handleFixGrammar}
+        onClick={handleTextEnhance}
         disabled={loading}
         className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
       >
-        {loading ? "Fixing..." : "Fix Grammar"}
+        {loading ? "Enhancing..." : "Enhance Text"}
       </button>
 
-      {correct && (
+      {enhance && (
         <div className="mt-4 p-4 border rounded bg-summary">
           <h2 className="font-semibold mb-2">Corrected Text:</h2>
-          <p>{correct}</p>
+          <p>{enhance}</p>
         </div>
       )}
     </div>

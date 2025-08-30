@@ -1,45 +1,49 @@
 "use client";
-import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function SummarizerPage() {
-  const params = useSearchParams();
-  const [input, setInput] = useState("");
+  const [text, setText] = useState("");
   const [summary, setSummary] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const text = params.get("text");
-    if (text) setInput(text);
-  }, [params]);
-
-  async function handleSummarize(value: string) {
-    const res = await fetch("/api/ai/summarize", {
-      method: "POST",
-      body: JSON.stringify({ text: value }),
-    });
-    const data = await res.json();
-    setSummary(data.summary);
-  }
-
-  useEffect(() => {
-    if (input.trim()) {
-      const timeout = setTimeout(() => handleSummarize(input), 800);
-      return () => clearTimeout(timeout);
+  const handleSummarize = async () => {
+    setLoading(true);
+    setSummary("");
+    try {
+      const res = await fetch("/api/ai/summarize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+      const data = await res.json();
+      setSummary(data.summary || "No summary generated.");
+    } catch (err) {
+      setSummary("Error while summarizing.");
+    } finally {
+      setLoading(false);
     }
-  }, [input]);
+  };
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Summarizer</h1>
+    <div className="p-6 max-w-3xl mx-auto">
+      <h1 className="text-2xl font-bold mb-4">Text Summarizer</h1>
       <textarea
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        className="w-full border p-2 mb-4"
-        placeholder="Paste or type your text here..."
+        className="w-full border rounded p-3 mb-4"
         rows={6}
+        placeholder="Paste text here..."
+        value={text}
+        onChange={(e) => setText(e.target.value)}
       />
+      <button
+        onClick={handleSummarize}
+        disabled={loading}
+        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+      >
+        {loading ? "Summarizing..." : "Summarize"}
+      </button>
+
       {summary && (
-        <div className="border p-4 bg-gray-100">
+        <div className="mt-4 p-4 border rounded bg-black">
           <h2 className="font-semibold mb-2">Summary:</h2>
           <p>{summary}</p>
         </div>

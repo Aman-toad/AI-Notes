@@ -2,6 +2,7 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
+import AiSuggestions from "@/components/AiSuggestions";
 
 type NoteDoc = {
   _id: string;
@@ -16,10 +17,58 @@ export default function NoteEcitorPage() {
   const params = useParams<{ id: string }>();
   const id = params.id;
 
+  // ai suggestions
   const [note, setNote] = useState<NoteDoc | null>(null);
+  const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [message, setMessage] = useState("");
+
+  const handleAiAction = async (id: string) => {
+    if (!note && id !== "idea") {
+      alert("Please write something first!");
+      return;
+    }
+    setMessage("");
+    setLoading(true);
+
+    try {
+      let endpoint = "";
+      switch (id) {
+        case "summarize": endpoint = "/api/ai/summarize"; break;
+        case "grammar": endpoint = "/api/ai/grammar"; break;
+        case "enhance": endpoint = "/api/ai/textEnhancer"; break;
+        case "idea": endpoint = "/api/ai/ideaGeneration"; break;
+        default: return;
+      }
+
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: content }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to Fetch AI Result");
+
+      if (id === "idea") {
+        setContent(prev => prev + "\n\n" + data.generatedIdea + "\n\n" + "Which one are you using ??")
+      }
+      else if (id === "grammar") {
+        setContent(prev => prev + "\n\n" + data.grammarizedText)
+      } else if (id === "summarize") {
+        setContent(prev => prev + "\n\n" + data.summary)
+      } else {
+        setContent(prev => prev + "\n\n" + data.EnhancedText)
+      }
+    } catch (err) {
+      console.error(err);
+      alert("something went wrong");
+    } finally {
+      setLoading(false)
+    }
+  }
 
   //fetch note
   useEffect(() => {
@@ -127,6 +176,36 @@ export default function NoteEcitorPage() {
         value={content}
         onChange={(e) => setContent(e.target.value)}
       />
+
+      {message && (
+        <p className="text-red-500 text-sm mb-3">{message}</p>
+      )}
+
+      {/* aisuggestions */}
+      {content && (
+        <div>
+          <p>Let AI help You !!</p>
+          <AiSuggestions onSelect={handleAiAction} />
+        </div>
+      )}
+
+      {/* idea Generation */}
+      {!content && (
+        <div>
+          <p>Don't have any Idea, Let AI help you !!</p>
+          <div
+            className="flex items-center gap-2 px-3 py-2 bg-slate-900 rounded-xl shadow cursor-pointer hover:bg-slate-800"
+            onClick={() => handleAiAction("idea")}
+          >
+            <span>💡</span>
+            <span className="font-medium">Generate Idea</span>
+          </div>
+        </div>
+      )}
+
+      {loading && (
+        <p className="mt-2 text-gray-500">Processing...</p>
+      )}
     </div>
   );
 }
