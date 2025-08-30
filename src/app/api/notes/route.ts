@@ -24,7 +24,9 @@ export async function GET() {
     )
   }
 
-  const notes = await Note.find({ user: user._id }).sort({ createdAt: -1 });
+  const notes = await Note.find({ user: user._id })
+    .sort({ createdAt: -1 })
+    .select("_id title content createdAt updatedAt");
   return NextResponse.json(notes);
 }
 
@@ -41,12 +43,18 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'User not found' }, { status: 404 });
   }
 
-  const { title, content } = await req.json();
+  const body = await req.json().catch(() => ({}));
+  const title = (body?.title ?? "") as string;
+  const content = (body?.content ?? "") as string;
+
   const newNote = await Note.create({
     user: user._id,
     title,
     content
   });
 
-  return NextResponse.json(newNote)
+  return NextResponse.json(
+    { _id: newNote._id, title: newNote.title, content: newNote.content, createdAt: newNote.createdAt, updatedAt: newNote.updatedAt },
+    { status: 201 }
+  );
 }
