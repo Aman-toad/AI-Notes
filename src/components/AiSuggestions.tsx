@@ -20,7 +20,7 @@ export default function AiSuggestions({ onSelect }: AiSuggestionsProps) {
         .map(s => (
           <div
             key={s.id}
-            className="flex items-center gap-2 px-3 py-2 bg-slate-900 rounded-xl shadow cursor-pointer hover:bg-slate-800"
+            className="flex items-center gap-2 px-3 py-2 bg-slate-900 rounded-xl shadow cursor-pointer hover:bg-slate-800 text-white"
             onClick={() => onSelect(s.id)}
           >
             <span>{s.icon}</span>

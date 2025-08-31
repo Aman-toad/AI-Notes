@@ -12,7 +12,7 @@ export interface INote extends Document{
 const NoteScheme = new Schema<INote>({
   user: {type: Schema.Types.ObjectId, ref: "User", required: true},
   title: {type: String, default: ""},
-  content: {type: String, default: ""},
+  content: {type: String, required: true},
   aiSummary: {type: String},
 }, {timestamps: true})
 

@@ -79,13 +79,12 @@ export const authOptions: NextAuthOptions = {
         session.user.name = token.name;
         session.user.email = token.email;
       }
-      return session
+      return session;
     },
 
     async redirect({url, baseUrl}){
       return `${baseUrl}/dashboard`;
     },
-
     
   }, 
 

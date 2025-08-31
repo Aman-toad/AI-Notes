@@ -1,130 +1,174 @@
-"use client";
-import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+"use client"
+import { signIn } from "next-auth/react"
+import { useRouter } from "next/navigation"
+import type React from "react"
+import { useState } from "react"
+import Link from "next/link"
 
 export default function RegisterPage() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const router = useRouter();
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
+    e.preventDefault()
+    setErrorMsg(null)
     if (password !== confirmPassword) {
-      alert("password do not match");
+      alert("Passwords do not match")
       return
     }
-
     try {
-      // react-query or any other state management can be used here
-      // loading state
-      // error handling
-      // success state can be added
+      setLoading(true)
       const res = await fetch("/api/auth/register", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name,
-          email,
-          password
-        }),
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ name, email, password }),
       })
-      const data = await res.json();
 
-      if (!res.ok) {
-        throw new Error(data.error || "Registration failed");
+      const contentType = res.headers.get("content-type") || ""
+      let data: any = null
+      if (contentType.includes("application/json")) {
+        data = await res.json()
+      } else {
+        const text = await res.text()
+        try {
+          data = JSON.parse(text)
+        } catch {
+          data = { error: text?.slice(0, 300) || "Unexpected response from server" }
+        }
       }
 
-      console.log(data);
+      if (!res.ok) {
+        throw new Error(data?.error || "Registration failed")
+      }
+
       router.push("/login")
-    } catch (error) {
-      console.log(error);
+    } catch (error: any) {
+      console.log(error)
+      setErrorMsg(error?.message || "Something went wrong. Please try again.")
+    } finally {
+      setLoading(false)
     }
   }
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-8 bg-black rounded shadow">
-      <h1 className="text-2xl font-bold mb-6 text-center">Register</h1>
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <div>
-          <label htmlFor="name" className="block mb-1 font-medium">Name:</label>
-          <input
-            type="text"
-            id="name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-500"
-          />
+    <main className="relative min-h-[100svh] bg-black text-white">
+      <div className="absolute inset-0 bg-[radial-gradient(1000px_500px_at_50%_-20%,#0b1220,transparent)]" />
+      <div className="absolute -top-24 -left-10 h-72 w-72 rounded-full bg-cyan-500/20 blur-3xl animate-pulse" />
+
+      <div className="relative z-10 mx-auto flex min-h-[100svh] max-w-6xl items-center justify-center px-4 py-10">
+        <div className="w-full max-w-md rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur">
+          <div className="mb-6 text-center">
+            <div className="mx-auto mb-2 h-10 w-10 rounded-md bg-cyan-500/20 ring-1 ring-cyan-400/30 flex items-center justify-center">
+              <span className="text-cyan-300 text-sm font-semibold">AI</span>
+            </div>
+            <h1 className="text-2xl font-semibold">Create your account</h1>
+            <p className="text-sm text-white/60">Join AI-Notes in seconds</p>
+          </div>
+
+          {/* Error message surface */}
+          {errorMsg ? (
+            <div className="mb-4 rounded-md border border-white/20 bg-white/5 px-3 py-2 text-sm text-white/80">
+              {errorMsg}
+            </div>
+          ) : null}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="name" className="mb-1 block text-sm text-white/80">
+                Name
+              </label>
+              <input
+                id="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                className="w-full rounded-md border border-white/10 bg-black/40 px-3 py-2 text-white placeholder:text-white/40 outline-none ring-0 focus:border-cyan-400/40"
+                placeholder="Your name"
+              />
+            </div>
+            <div>
+              <label htmlFor="email" className="mb-1 block text-sm text-white/80">
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoComplete="email"
+                className="w-full rounded-md border border-white/10 bg-black/40 px-3 py-2 text-white placeholder:text-white/40 outline-none ring-0 focus:border-cyan-400/40"
+                placeholder="you@example.com"
+              />
+            </div>
+            <div>
+              <label htmlFor="password" className="mb-1 block text-sm text-white/80">
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                autoComplete="new-password"
+                className="w-full rounded-md border border-white/10 bg-black/40 px-3 py-2 text-white placeholder:text-white/40 outline-none ring-0 focus:border-cyan-400/40"
+                placeholder="••••••••"
+              />
+            </div>
+            <div>
+              <label htmlFor="confirmPassword" className="mb-1 block text-sm text-white/80">
+                Confirm password
+              </label>
+              <input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                autoComplete="new-password"
+                className="w-full rounded-md border border-white/10 bg-black/40 px-3 py-2 text-white placeholder:text-white/40 outline-none ring-0 focus:border-cyan-400/40"
+                placeholder="••••••••"
+                aria-describedby="password-hint"
+              />
+              <p id="password-hint" className="mt-1 text-xs text-white/50">
+                Must match your password exactly.
+              </p>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full rounded-md bg-cyan-500 px-4 py-2 font-medium text-black transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {loading ? "Creating..." : "Create account"}
+            </button>
+          </form>
+
+          <div className="mt-4">
+            <button
+              type="button"
+              onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+              className="w-full rounded-md bg-white px-4 py-2 font-medium text-black transition hover:bg-white/90"
+            >
+              Continue with Google
+            </button>
+          </div>
+
+          <p className="mt-6 text-center text-sm text-white/60">
+            Already have an account?{" "}
+            <Link href="/login" className="text-cyan-300 hover:text-cyan-200 underline-offset-4 hover:underline">
+              Sign in
+            </Link>
+          </p>
         </div>
-        <div>
-          <label htmlFor="email" className="block mb-1 font-medium">Email:</label>
-          <input
-            type="email"
-            id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-500"
-          />
-        </div>
-        <div>
-          <label htmlFor="password" className="block mb-1 font-medium">Password:</label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-500"
-          />
-        </div>
-        <div>
-          <label htmlFor="confirmPassword" className="block mb-1 font-medium">Confirm Password:</label>
-          <input
-            type="password"
-            id="confirmPassword"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-500"
-          />
-        </div>
-        <button
-          type="submit"
-          className="w-full py-2 px-4 bg-blue-600 text-white font-semibold rounded hover:bg-blue-700 transition"
-        >
-          Register
-        </button>
-      </form>
-      <div className="mt-4 text-center">
-        <p>
-          Already have an account?{" "}
-          <a href="/login" className="text-blue-600 hover:underline">
-            Login here
-          </a>
-        </p>
       </div>
-      <div className="mt-6">
-        <button
-          type="button"
-          onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
-          className="w-full py-2 px-4 bg-red-600 text-white font-semibold rounded hover:bg-red-700 transition flex items-center justify-center gap-2"
-        >
-          <svg className="w-5 h-5" viewBox="0 0 24 24">
-            <path
-              fill="currentColor"
-              d="M21.35 11.1h-9.18v2.98h5.26c-.23 1.24-1.39 3.65-5.26 3.65-3.16 0-5.74-2.62-5.74-5.85s2.58-5.85 5.74-5.85c1.8 0 3.01.77 3.7 1.43l2.53-2.46C16.13 3.98 14.29 3 12.17 3 6.76 3 2.5 7.25 2.5 12.01s4.26 9.01 9.67 9.01c5.59 0 9.28-3.92 9.28-9.46 0-.64-.07-1.13-.16-1.56z"
-            />
-          </svg>
-          Sign in with Google
-        </button>
-      </div>
-    </div>
+    </main>
   )
 }
