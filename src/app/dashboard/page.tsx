@@ -94,7 +94,7 @@ export default function DashboardPage() {
   
   const recent = useMemo(() => notes.slice(0, 3), [notes])
 
-  if(status === "loading") return <p>Loading User Data ...</p>;
+  if(status === "loading") return <p className="text-white text-center ">Loading User Data ...</p>;
   if(!session) return <p>Not signed in</p>;
 
   return (
