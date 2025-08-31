@@ -52,7 +52,7 @@ export const authOptions: NextAuthOptions = {
 
   callbacks: {
 
-    async signIn({user,account, profile, email}){
+    async signIn({user}){
       await connectToDatabase();
       const existingUser = await User.findOne({email: user.email});
       if(!existingUser){
@@ -82,7 +82,7 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
 
-    async redirect({url, baseUrl}){
+    async redirect({baseUrl}){
       return `${baseUrl}/dashboard`;
     },
     
